@@ -1,8 +1,10 @@
-# Ejercicios
+# Bootcamp Devops Continuo - Módulo 1 - Linux
 
-## Ejercicios CLI
+## Ejercicios
 
-### 1. Crea mediante comandos de bash la siguiente jerarquía de ficheros y directorios
+### Ejercicios CLI
+
+#### 1. Crea mediante comandos de bash la siguiente jerarquía de ficheros y directorios
 
 ```bash
 foo/
@@ -20,7 +22,7 @@ Me encanta la bash!!
 
 Y `file2.txt` debe permanecer vacío.
 
-### 2. Mediante comandos de bash, vuelca el contenido de file1.txt a file2.txt y mueve file2.txt a la carpeta empty
+#### 2. Mediante comandos de bash, vuelca el contenido de file1.txt a file2.txt y mueve file2.txt a la carpeta empty
 
 El resultado de los comandos ejecutados sobre la jerarquía anterior deben dar el siguiente resultado.
 
@@ -38,7 +40,7 @@ Donde `file1.txt` y `file2.txt` deben contener el siguiente texto:
 Me encanta la bash!!
 ```
 
-### 3. Crear un script de bash que agrupe los pasos de los ejercicios anteriores y además permita establecer el texto de file1.txt alimentándose como parámetro al invocarlo
+#### 3. Crear un script de bash que agrupe los pasos de los ejercicios anteriores y además permita establecer el texto de file1.txt alimentándose como parámetro al invocarlo
 
 Si se le pasa un texto vacío al invocar el script, el texto de los ficheros, el texto por defecto será:
 
@@ -46,7 +48,7 @@ Si se le pasa un texto vacío al invocar el script, el texto de los ficheros, el
 Que me gusta la bash!!!!
 ```
 
-### 4. Crea un script de bash que descargue el contenido de una página web a un fichero y busque en dicho fichero una palabra dada como parámetro al invocar el script
+#### 4. Crea un script de bash que descargue el contenido de una página web a un fichero y busque en dicho fichero una palabra dada como parámetro al invocar el script
 
 La URL de dicha página web será una constante en el script.
 
@@ -65,7 +67,7 @@ $ ejercicio4.sh patata
 > Aparece por primera vez en la línea 27
 ```
 
-### 5. OPCIONAL - Modifica el ejercicio anterior de forma que la URL de la página web se pase por parámetro y también verifique que la llamada al script sea correcta
+#### 5. OPCIONAL - Modifica el ejercicio anterior de forma que la URL de la página web se pase por parámetro y también verifique que la llamada al script sea correcta
 
 Si al invocar el script este no recibe dos parámetros (URL y palabra a buscar), se deberá de mostrar el siguiente mensaje:
 

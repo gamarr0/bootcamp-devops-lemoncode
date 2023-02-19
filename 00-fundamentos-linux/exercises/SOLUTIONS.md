@@ -3,7 +3,6 @@
 ## Soluciones a ejercicios
 
 ### Ejercicios CLI
----
 
 #### 1. Crear jerarquía de ficheros y directorios
 
