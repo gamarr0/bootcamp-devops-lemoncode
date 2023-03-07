@@ -105,8 +105,6 @@ Podemos añadir datos a la base de datos desde la propia consola a partir del fi
 
 `docker exec some-mongo1 mongoimport --db TopicstoreDb --collection Topics --jsonArray /tmp/Topics.json`
 
-...
-
 ### 2. Levantar el entorno para la aplicación lemoncode-challenge usando Docker Compose
 
 En vez de tener que memorizar y ejecutar un comando para levantar cada contenedor de nuestra aplicación podemos desplegar la aplicación completa a través de Docker compose, que nos permitirá definir los distintos servicios y la configuración para cada uno en un único fichero.
