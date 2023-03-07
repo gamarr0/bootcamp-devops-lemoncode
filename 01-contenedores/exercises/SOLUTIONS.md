@@ -55,7 +55,7 @@ Ya solo falta construir la imagen de la aplicación con el siguiente comando (co
 
 `docker build -t lemoncode-challenge/backend:latest lemoncode-challenge/dotnet-stack/backend`
 
-#### Frontend
+#### Frontend
 
 Para el frontend, como utilizamos node que es un lenguaje interpretado, no necesitamos hacer multistage build para compilar pero si que reutilizaremos la técnica de copiar e instalar las dependencias antes que el código fuente para aprovechar la caché todo lo posible al construir la imagen para nuevas versiones de la aplicación.
 
