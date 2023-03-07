@@ -103,7 +103,7 @@ Podemos añadir datos a la base de datos desde la propia consola a partir del fi
 
 `docker cp Topics.json some-mongo:/tmp/Topics.json`
 
-`docker exec some-mongo1 mongoimport --db TopicstoreDb --collection Topics --jsonArray /tmp/Topics.json`
+`docker exec some-mongo mongoimport --db TopicstoreDb --collection Topics --jsonArray /tmp/Topics.json`
 
 ### 2. Levantar el entorno para la aplicación lemoncode-challenge usando Docker Compose
 
