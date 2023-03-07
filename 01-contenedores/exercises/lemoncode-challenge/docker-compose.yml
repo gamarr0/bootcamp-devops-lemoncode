@@ -1,0 +1,32 @@
+version: "3"
+
+services:
+  some-mongo:
+    image: mongo
+    volumes:
+      - mongodb-data:/data/db
+    networks:
+      - lemoncode-challenge
+  topics-api:
+    image: lemoncode-challenge/backend
+    networks:
+      - lemoncode-challenge
+    depends_on:
+      - some-mongo
+  topics-web:
+    image: lemoncode-challenge/frontend
+    networks:
+      - lemoncode-challenge
+    ports:
+      - "8080:3000"
+    environment:
+      - API_URI=http://topics-api:5000/api/topics
+    depends_on:
+      - topics-api
+
+volumes:
+  mongodb-data:
+    external: true
+
+networks:
+  lemoncode-challenge:
