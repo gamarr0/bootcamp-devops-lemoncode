@@ -1,0 +1,36 @@
+[{
+  "_id": {
+    "$oid": "6403a92175c4419b22a3966f"
+  },
+  "Name": "Linux"
+},{
+  "_id": {
+    "$oid": "5fa2ca6abe7a379ec4234883"
+  },
+  "Name": "Contenedores"
+},{
+  "_id": {
+    "$oid": "6403a96b75c4419b22a39670"
+  },
+  "Name": "Kubernetes"
+},{
+  "_id": {
+    "$oid": "6403a98875c4419b22a39671"
+  },
+  "Name": "CI/CD"
+},{
+  "_id": {
+    "$oid": "6403a99375c4419b22a39672"
+  },
+  "Name": "Cloud"
+},{
+  "_id": {
+    "$oid": "6403a9a875c4419b22a39673"
+  },
+  "Name": "Terraform"
+},{
+  "_id": {
+    "$oid": "6403a9c275c4419b22a39674"
+  },
+  "Name": "Monitorización"
+}]
