@@ -4,6 +4,12 @@ metadata:
   name: todo
   labels:
     name: todo
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/affinity: "cookie"
+    nginx.ingress.kubernetes.io/session-cookie-name: "todosticky"
+    nginx.ingress.kubernetes.io/session-cookie-expires: "604800"
+    nginx.ingress.kubernetes.io/session-cookie-max-age: "604800"
 spec:
   rules:
   - host: todo.lc

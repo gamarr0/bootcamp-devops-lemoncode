@@ -17,7 +17,7 @@ En este caso no nos conviene replicar los pods de la aplicación, ya que en cada
 Definiciones:
 
 * [Deployment](solutions/00-monolith-in-mem/00-depoyment.yaml)
-  * La configuración se setea directamente como variables de entorno, se podría haber utilizado un `configMap` pero no se requería y las variables son muy estáticas
+  * La configuración se setea directamente como variables de entorno, se podría haber utilizado un `ConfigMap` pero no se requería y las variables son muy estáticas
 * [Service](solutions/00-monolith-in-mem/01-service.yaml)
   * Expone la aplicación en el puerto 3000 usando un balanceador del proveedor (en este caso minikube)
 
@@ -43,12 +43,12 @@ Definiciones:
 
 * [StorageClass](solutions/01-monolith/00-storageClass.yaml)
   * Se usa el provisioner local con la configuración por defecto
-  * Se establece la opción `reclaimPolicy` a `Delete`, aunque solo la aplicará a los PersistentVolume creados dinámicamente, por lo que no nos afecta
+  * Se establece la opción `reclaimPolicy` a `Delete`, aunque solo la aplicará a los `PersistentVolume` creados dinámicamente, por lo que no nos afecta
 * [PersistentVolume](solutions/01-monolith/01-persistentVolume.yaml)
   * Se establece `reclaimPolicy` a `Retain` para que no se elimine el volumen si se deja de utilizar, evitando pérdida de datos
   * Se utiliza el modo de acceso `ReadWriteOnce` para que el volumen persistente solo pueda ser utilizado por un nodo
 * [PersistentVolumeClaim](solutions/01-monolith/02-persistentVolumeClaim.yaml)
-  * Solicitamos un volumen persistente de 500 megas de la clase creada anteriormente
+  * Solicitamos un volumen persistente de 500 mb de la clase creada anteriormente
 * [Databse StatefulSet](solutions/01-monolith/03-statefulSet.yaml)
   * Sólo una réplica para evitar tener los datos repartidos sin control
   * Se podría haber utilizado `volumeClaimTemplates` para que el `PersistentVolumeClaim` se genere automáticamente con cada réplica, pero no es necesario porque se ha decidido no replicar la base de datos y el enunciado pide que se cree explícitamente, además de que se tiene más control de que volumen se utiliza de esta forma
@@ -78,9 +78,9 @@ Comando para desplegar la solución:
 
 ### Ejercicio 3. Aplicación Distribuida
 
-En este caso los datos se guardan en el pod de la api, por lo que si lo replicamos podríamos tener problemas con distintas visitas del mismo usuario en las que puede ver datos distintos. Para evitarlo se puede usar una `sticky session` para el enrutado de la api en el ingress (para el front no hace falta porque no cambia), aunque esta solución funciona solo temporalmente y de forma local al equipo, además de que también tendríamos el problema de que al escalar hacia abajo perderíamos los datos que hubiese en esos pods.
+En este caso los datos se guardan en el pod de la api, por lo que si lo replicamos podríamos tener problemas con distintas visitas del mismo usuario en las que puede ver datos distintos. Para evitarlo se puede usar una `Sticky session` para el enrutado de la api en el ingress (para el front no hace falta porque no cambia), aunque esta solución funciona solo temporalmente y de forma local al equipo, además de que también tendríamos el problema de que al escalar hacia abajo perderíamos los datos que hubiese en esos pods.
 
-Adicionalmente se ha añadido un HorizontalPodAutoscaler para los pods del front, de modo que el número de pods se ajuste automáticamente a la carga.
+Adicionalmente se ha añadido un `HorizontalPodAutoscaler` para los pods del front, de modo que el número de pods se ajuste automáticamente a la carga.
 
 Definiciones:
 
@@ -97,7 +97,7 @@ Definiciones:
   * Expone el front en el puerto 80 dentro del clúster
 * [Ingress](solutions/02-distributed/05-ingress.yaml)
   * Expone los servicios de la api y el front como URLs del host `todo.lc`
-  * Aunque se decide no escalar la API por los problemas mencionados anteriormente, le añadimos la sticky session a modo de 
+  * Aunque se decide no escalar la API por los problemas mencionados anteriormente añadimos la sticky session a modo de ilustración, para lo cual utilizamos las anotaciones según la documentación del ingress que estamos utilizando (nginx)
 * [Front HorizontalPodAutoscaler](solutions/02-distributed/06-horizontalPodAutoscaler.yaml)
   * Se mantienen entre 2 y 10 réplicas de nuevo usando la métrica de utilización de CPU, se podrían utilizar otras pero es necesario configurar el clúser para ello
 
