@@ -27,10 +27,6 @@ Comando para desplegar la solución:
 
 ### Ejercicio 2. Monolito
 
-... consideraciones, no ha sido necesario configMap para la base de datos, pvc en template de statefulset ...
-
-... monolito replicado, base de datos centralizada ...
-
 Definiciones:
 
 * [StorageClass](solutions/01-monolith/00-storageClass.yaml)
