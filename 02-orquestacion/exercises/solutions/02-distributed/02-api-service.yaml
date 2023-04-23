@@ -4,7 +4,8 @@ metadata:
   name: todo-api
 spec:
   selector:
-    app: todo-api
+    app: todo
+    service: api
   type: ClusterIP
   ports:
   - port: 3000

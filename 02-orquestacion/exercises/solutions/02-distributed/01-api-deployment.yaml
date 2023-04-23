@@ -5,11 +5,14 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: todo-api
+      app: todo
+      service: api
+  replicas: 1
   template:
     metadata:
       labels:
-        app: todo-api
+        app: todo
+        service: api
     spec:
       containers:
       - name: todo-api
@@ -17,7 +20,7 @@ spec:
         imagePullPolicy: Never
         resources:
           limits:
-            memory: 256Mi
+            memory: 200Mi
             cpu: 100m
         ports:
         - containerPort: 3000

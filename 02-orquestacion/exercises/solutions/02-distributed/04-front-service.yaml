@@ -4,7 +4,8 @@ metadata:
   name: todo-front
 spec:
   selector:
-    app: todo-front
+    app: todo
+    service: front
   type: ClusterIP
   ports:
   - port: 80

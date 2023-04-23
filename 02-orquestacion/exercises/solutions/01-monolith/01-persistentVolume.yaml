@@ -4,7 +4,7 @@ metadata:
   name: disk1
 spec:
   storageClassName: local-storage
-  persistentVolumeReclaimPolicy: Recycle
+  persistentVolumeReclaimPolicy: Retain
   hostPath:
     path: /data/disk1
   capacity:

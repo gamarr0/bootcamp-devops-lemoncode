@@ -8,14 +8,18 @@ Para construir las imágenes necesarias en cada servicio y poder utilizarlas en 
 
 En todos los casos donde se utilizan imágenes locales ha sido necesario añadir `imagePullPolicy: Never` a la especificación del contenedor para que kubernetes no intente hacer el pull de la imagen.
 
-Para poder utilizar los servicios de tipo LoadBalancer en minikube y que podamos acceder a ellos desde nuestro host se ha utilizado `minikube tunnel`.
+Para poder utilizar los servicios de tipo `LoadBalancer` y los `Ingress` en minikube y que podamos acceder a ellos desde nuestro host se ha utilizado el comando `minikube tunnel`.
 
 ### Ejercicio 1. Monolito en memoria
+
+En este caso no nos conviene replicar los pods de la aplicación, ya que en cada visita un mismo usuario podría ver distintos datos, al estar guardados en memoria.
 
 Definiciones:
 
 * [Deployment](solutions/00-monolith-in-mem/00-depoyment.yaml)
+  * La configuración se setea directamente como variables de entorno, se podría haber utilizado un `configMap` pero no se requería y las variables son muy estáticas
 * [Service](solutions/00-monolith-in-mem/01-service.yaml)
+  * Expone la aplicación en el puerto 3000 usando un balanceador del proveedor (en este caso minikube)
 
 Comando para construir la imagen:
 
@@ -27,15 +31,40 @@ Comando para desplegar la solución:
 
 ### Ejercicio 2. Monolito
 
+No ha sido necesario crear un `configMap` para la base de datos ya que se ha utilizado la configuración por defecto.
+
+En vez de crear el `PersistentVolumeClaim` por separado y referenciarlo desde el `StatefulSet`, se ha optado por utilizar la propiedad `volumeClaimTemplates` del `StatefulSet` que creará un `PersistentVolumeClaim` automáticamente por cada réplica, ya que si tuviésemos varias réplicas de la base de datos no podrían compartir el mismo `PersistentVolume`.
+
+Para que el usuario siempre vea los mismos datos solo podremos tener una sola réplica de la base de datos, ya que si tenemos más la aplicación podría conectarse a una distinta cada vez y se mostarían datos distintos (ya que las réplicas son independientes, no están clusterizadas).
+
+Adicionalmente se ha añadido un `HorizontalPodAutoscaler` para los pods de la aplicación, de modo que se repliquen automáticamente cuando la carga aumente o disminuya.
+
 Definiciones:
 
 * [StorageClass](solutions/01-monolith/00-storageClass.yaml)
+  * Se usa el provisioner local con la configuración por defecto
+  * Se establece la opción `reclaimPolicy` a `Delete`, aunque solo la aplicará a los PersistentVolume creados dinámicamente, por lo que no nos afecta
 * [PersistentVolume](solutions/01-monolith/01-persistentVolume.yaml)
-* [Databse StatefulSet](solutions/01-monolith/02-statefulSet.yaml)
-* [Database Service](solutions/01-monolith/03-db-service.yaml)
-* [App ConfigMap](solutions/01-monolith/04-configMap.yaml)
-* [App Deployment](solutions/01-monolith/05-deployment.yaml)
-* [App Service](solutions/01-monolith/06-app-service.yaml)
+  * Se establece `reclaimPolicy` a `Retain` para que no se elimine el volumen si se deja de utilizar, evitando pérdida de datos
+  * Se utiliza el modo de acceso `ReadWriteOnce` para que el volumen persistente solo pueda ser utilizado por un nodo
+* [PersistentVolumeClaim](solutions/01-monolith/02-persistentVolumeClaim.yaml)
+  * Solicitamos un volumen persistente de 500 megas de la clase creada anteriormente
+* [Databse StatefulSet](solutions/01-monolith/03-statefulSet.yaml)
+  * Sólo una réplica para evitar tener los datos repartidos sin control
+  * Se podría haber utilizado `volumeClaimTemplates` para que el `PersistentVolumeClaim` se genere automáticamente con cada réplica, pero no es necesario porque se ha decidido no replicar la base de datos y el enunciado pide que se cree explícitamente, además de que se tiene más control de que volumen se utiliza de esta forma
+  * En cuanto a recursos solo se especifican límites, por lo que los recursos solicitados serán igual que estos y la penalización en caso de sobrecarga es menos probable para estos pod, lo cual resulta beneficioso ya que solo habrá una réplica de base de datos y es necesaria para el funcionamiento de la aplicación
+* [Database Service](solutions/01-monolith/04-db-service.yaml)
+  * Expone el puerto 5432 de los pod de la base de datos dentro del clúster
+* [App ConfigMap](solutions/01-monolith/05-configMap.yaml)
+  * Configuración del entorno de la aplicación y la conexión con la base de datos
+* [App Deployment](solutions/01-monolith/06-deployment.yaml)
+  * En principio 1 réplica, se escalarán automáticamente
+  * Se añade un límite de recursos mayor que los solicitados para tener margen de tiempo mientras se generan nuevas réplicas en caso de un pico de carga, ya que el `HorizontalPodAutoscaler` utiliza los recursos solicitados para comprobar la utilización
+  * Con la afinidad se intenta que las réplicas se desplieguen en los nodos donde esté la base de datos
+* [App Service](solutions/01-monolith/07-app-service.yaml)
+  * Se expone la aplicación en el puerto 3000 a través de un balanceador de carga del proveedor
+* [App HorizontalPodAutoscaler](solutions/01-monolith/08-horizontalPodAutoscaler.yaml)
+  * Se mantienen entre 2 y 10 réplicas en función de los recursos consumidos por la aplicación, intentando mantener la utilización de la cpu de cada pod al 50%
 
 Comandos para construir las imágenes:
 
@@ -49,14 +78,28 @@ Comando para desplegar la solución:
 
 ### Ejercicio 3. Aplicación Distribuida
 
+En este caso los datos se guardan en el pod de la api, por lo que si lo replicamos podríamos tener problemas con distintas visitas del mismo usuario en las que puede ver datos distintos. Para evitarlo se puede usar una `sticky session` para el enrutado de la api en el ingress (para el front no hace falta porque no cambia), aunque esta solución funciona solo temporalmente y de forma local al equipo, además de que también tendríamos el problema de que al escalar hacia abajo perderíamos los datos que hubiese en esos pods.
+
+Adicionalmente se ha añadido un HorizontalPodAutoscaler para los pods del front, de modo que el número de pods se ajuste automáticamente a la carga.
+
 Definiciones:
 
 * [Api ConfigMap](solutions/02-distributed/00-api-configMap.yaml)
+  * Configuración de entorno de la api
 * [Api Deployment](solutions/02-distributed/01-api-deployment.yaml)
+  * Solo 1 réplica para evitar problemas con los datos
 * [Api Service](solutions/02-distributed/02-api-service.yaml)
+  * Expone la api en el puerto 3000 dentro del clúster
 * [Front Deployment](solutions/02-distributed/03-front-deployment.yaml)
+  * En principio 1 réplica, se escalarán automáticamente
+  * Se ha añadido una antiafinidad para que las réplicas que se vayan creando se intenten distribuir en nodos donde no se esté ejecutando ya alguna réplica del mismo pod a ser posible
 * [Front Service](solutions/02-distributed/04-front-service.yaml)
+  * Expone el front en el puerto 80 dentro del clúster
 * [Ingress](solutions/02-distributed/05-ingress.yaml)
+  * Expone los servicios de la api y el front como URLs del host `todo.lc`
+  * Aunque se decide no escalar la API por los problemas mencionados anteriormente, le añadimos la sticky session a modo de 
+* [Front HorizontalPodAutoscaler](solutions/02-distributed/06-horizontalPodAutoscaler.yaml)
+  * Se mantienen entre 2 y 10 réplicas de nuevo usando la métrica de utilización de CPU, se podrían utilizar otras pero es necesario configurar el clúser para ello
 
 Comandos para construir las imágenes:
 
