@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: todo-db
+spec:
+  selector:
+    matchLabels:
+      app: todo
+      service: db
+  serviceName: todo-db
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: todo
+        service: db
+    spec:
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: todo-db-data
+      containers:
+      - name: todo-db
+        image: antonio/lc-todo-db:v1
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 5432
+        volumeMounts:
+        - name: data
+          mountPath: /var/lib/postgresql/data
+        resources:
+          limits:
+            cpu: 100m
+            memory: 200Mi

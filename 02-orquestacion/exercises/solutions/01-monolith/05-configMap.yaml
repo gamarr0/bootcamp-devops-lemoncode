@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: todo-app-config
+data:
+  NODE_ENV: "develop"
+  PORT: "3000"
+  DB_HOST: "todo-db"
+  DB_USER: "postgres"
+  DB_PASSWORD: "postgres"
+  DB_PORT: "5432"
+  DB_NAME: "todos_db"
+  DB_VERSION: "10.4"

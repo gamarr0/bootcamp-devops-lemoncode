@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: todo-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: todo
+      service: monolith
+  template:
+    metadata:
+      labels:
+        app: todo
+        service: monolith
+    spec:
+      containers:
+      - name: todo-app
+        image: antonio/lc-todo-app:v1
+        imagePullPolicy: Never
+        resources:
+          requests:
+            memory: 100Mi
+            cpu: 50m
+          limits:
+            memory: 150Mi
+            cpu: 100m
+        ports:
+        - containerPort: 3000
+        envFrom:
+          - configMapRef:
+              name: todo-app-config
+      affinity:
+        podAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: todo
+                    service: db
+                topologyKey: kubernetes.io/hostname
+              weight: 100

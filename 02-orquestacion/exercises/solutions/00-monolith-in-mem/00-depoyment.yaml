@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: todo-app
+spec:
+  selector:
+    matchLabels:
+      app: todo-app
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: todo-app
+    spec:
+      containers:
+      - name: todo-app
+        image: antonio/lc-todo-monolith-memory:v1
+        imagePullPolicy: Never
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: PORT
+          value: "3000"
+        ports:
+          - containerPort: 3000
+        resources:
+          limits:
+            memory: 128Mi
+            cpu: 100m
