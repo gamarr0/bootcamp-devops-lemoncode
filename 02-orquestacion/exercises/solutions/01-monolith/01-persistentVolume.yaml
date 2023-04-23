@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: disk1
+spec:
+  storageClassName: local-storage
+  persistentVolumeReclaimPolicy: Recycle
+  hostPath:
+    path: /data/disk1
+  capacity:
+    storage: 600Mi
+  accessModes:
+    - ReadWriteOnce

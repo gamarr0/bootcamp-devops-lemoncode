@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: todo-api
+spec:
+  selector:
+    matchLabels:
+      app: todo-api
+  template:
+    metadata:
+      labels:
+        app: todo-api
+    spec:
+      containers:
+      - name: todo-api
+        image: antonio/lc-todo-api:v1
+        imagePullPolicy: Never
+        resources:
+          limits:
+            memory: 256Mi
+            cpu: 100m
+        ports:
+        - containerPort: 3000
+        envFrom:
+          - configMapRef:
+              name: todo-api-env
