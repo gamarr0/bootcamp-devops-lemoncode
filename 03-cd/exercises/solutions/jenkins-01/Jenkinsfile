@@ -1,0 +1,26 @@
+pipeline {
+  agent any
+
+  stages {
+    stage('Checkout') {
+      steps {
+        checkout scmGit(
+          branches: [[name: 'master']],
+          userRemoteConfigs: [[url: 'https://github.com/gamarr0/lemoncode-calculator.git']]
+        )
+      }
+    }
+
+    stage('Compile') {
+      steps {
+        sh './gradlew compileJava'
+      }
+    }
+
+    stage('Unit tests') {
+      steps {
+        sh './gradlew test'
+      }
+    }
+  }
+}
