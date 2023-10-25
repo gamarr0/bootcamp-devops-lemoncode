@@ -47,7 +47,7 @@ pipeline {
 ```
 *(solutions/jenkins-01/Jenkinsfile)*
 
-![Ejecución del ejercicio 1 de Jenkins](jenkins-01.png)
+![Ejecución del ejercicio 1 de Jenkins](solutions-images/jenkins-01.png)
 
 ### Ejercicio 2. Modificar la pipeline para que utilice la imagen Docker de Gradle como build runner
 
@@ -153,13 +153,104 @@ pipeline {
 ```
 *(solutions/jenkins-02/Jenkinsfile)*
 
-![Ejecución del ejercicio 2 de Jenkins](jenkins-02.png)
+![Ejecución del ejercicio 2 de Jenkins](solutions-images/jenkins-02.png)
 
 ## Soluciones a ejercicios GitLab
 
 ### Ejercicio 1. CI/CD de una aplicación spring
 
+Teniendo generado y configurado el par de claves ssh para el usuario de nuestro gitlab local, creamos el proyecto springapp, lo clonamos y añadimos los ficheros de la aplicación.
 
+```bash
+git clone ssh://git@gitlab.local:2222/developer1/springapp.git
+cp -r ../bootcamprepo/03-cd/02-gitlab/springapp/* springapp/
+git add .
+git commit -m "Add app files"
+git push
+```
+
+Utilizamos la rama por defecto main a la que añadimos el fichero *.gitlab-ci.yml* con el pipeline:
+
+```yaml
+.maven_jobs:
+  image: maven:3.6.3-jdk-8-openj9
+
+.docker_jobs:
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY/$CI_PROJECT_PATH
+
+workflow:
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "main"'
+    - when: never
+
+stages:
+  - maven:build
+  - maven:test
+  - docker:build
+  - deploy
+
+build_app:
+  stage: maven:build
+  script:
+    - mvn clean package
+  artifacts:
+    when: on_success
+    paths:
+      - "target/*.jar"
+  needs: []
+  extends: .maven_jobs
+
+test_app:
+  stage: maven:test
+  script:
+    - mvn verify
+  artifacts:
+    when: on_success
+    reports:
+      junit:
+        - target/surefire-reports/TEST-*.xml
+  needs: []
+  extends: .maven_jobs
+
+build_image:
+  stage: docker:build
+  script:
+    - docker build -t $CI_REGISTRY/$CI_PROJECT_PATH:$CI_COMMIT_SHA .
+    - docker push $CI_REGISTRY/$CI_PROJECT_PATH:$CI_COMMIT_SHA
+  needs:
+    - job: build_app
+      artifacts: true
+    - job: test_app
+      artifacts: false
+  extends: .docker_jobs
+
+deploy:
+  stage: deploy
+  before_script:
+    - !reference [.docker_jobs,before_script]
+    - if [[ $(docker ps --filter "name=springapp" --format '{{.Names}}') == "springapp" ]]; then docker rm -f springapp; fi;
+  script:
+    - docker run --name "springapp" -d -p 8080:8080 $CI_REGISTRY/$CI_PROJECT_PATH:$CI_COMMIT_SHA
+  needs:
+    - job: build_image
+
+```
+*(solutions/gitlab-01/.gitlab-ci.yml)*
+
+Detalles sobre el pipeline:
+- Declaramos dos templates para reutilizar elementos comunes entre jobs, uno para los que usan maven y otro para los relacionados con docker. Los aprovechamos usando **extends** excepto para el job de deploy, que como tiene un comando adicional en **before_script** hay que utilizar **!reference** porque con **extends** se sobrescribe el **before_script** del template en vez de mezclarse.
+- Usamos **workflow** para que el pipeline solo se ejecute en la rama main, ya que sería la única que nos interesa desplegar.
+- Con **needs** afinamos el pipeline para que las dos primeras stages se puedan ejecutar en paralelo ya que son independientes, además de hacer que la construcción de la imagen de docker dependa de las dos primeras y la del deploy de la de la imagen, ya que no podemos desplegar sin la imagen y no queremos construir esta si no se ha compilado la aplicación o si los tests han fallado.
+- Como usando **needs** por defecto un job obtiene los artefactos de los jobs que depende, indicamos cuando no necesitamos los artefactos para que sea más óptimo (por ejemplo el job que construye la imagen no necesita los resultados de los tests).
+
+Tras hacer commit del fichero se ejecuta el pipeline:
+
+![Ejecución del pipeline del ejercicio 1 de GitLab](solutions-images/gitlab-01-1.png)
+
+Y podemos acceder a la aplicación a través de la URL indicada en el enunciado:
+
+![Aplicación en ejecución del ejercicio 1 de GitLab](solutions-images/gitlab-01-2.png)
 
 ### Ejercicio 2. Crear un usuario nuevo y probar que no puede acceder al proyecto anteriormente creado
 

@@ -1,0 +1,62 @@
+.maven_jobs:
+  image: maven:3.6.3-jdk-8-openj9
+
+.docker_jobs:
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY/$CI_PROJECT_PATH
+
+workflow:
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "main"'
+    - when: never
+
+stages:
+  - maven:build
+  - maven:test
+  - docker:build
+  - deploy
+
+build_app:
+  stage: maven:build
+  script:
+    - mvn clean package
+  artifacts:
+    when: on_success
+    paths:
+      - "target/*.jar"
+  needs: []
+  extends: .maven_jobs
+
+test_app:
+  stage: maven:test
+  script:
+    - mvn verify
+  artifacts:
+    when: on_success
+    reports:
+      junit:
+        - target/surefire-reports/TEST-*.xml
+  needs: []
+  extends: .maven_jobs
+
+build_image:
+  stage: docker:build
+  script:
+    - docker build -t $CI_REGISTRY/$CI_PROJECT_PATH:$CI_COMMIT_SHA .
+    - docker push $CI_REGISTRY/$CI_PROJECT_PATH:$CI_COMMIT_SHA
+  needs:
+    - job: build_app
+      artifacts: true
+    - job: test_app
+      artifacts: false
+  extends: .docker_jobs
+
+deploy:
+  stage: deploy
+  before_script:
+    - !reference [.docker_jobs,before_script]
+    - if [[ $(docker ps --filter "name=springapp" --format '{{.Names}}') == "springapp" ]]; then docker rm -f springapp; fi;
+  script:
+    - docker run --name "springapp" -d -p 8080:8080 $CI_REGISTRY/$CI_PROJECT_PATH:$CI_COMMIT_SHA
+  needs:
+    - job: build_image
