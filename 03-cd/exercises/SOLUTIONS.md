@@ -161,21 +161,14 @@ pipeline {
 
 Teniendo generado y configurado el par de claves ssh para el usuario de nuestro gitlab local, creamos el proyecto springapp, lo clonamos y añadimos los ficheros de la aplicación.
 
-```bash
-git clone ssh://git@gitlab.local:2222/developer1/springapp.git
-cp -r ../bootcamprepo/03-cd/02-gitlab/springapp/* springapp/
-git add .
-git commit -m "Add app files"
-git push
-```
-
-Utilizamos la rama por defecto main a la que añadimos el fichero *.gitlab-ci.yml* con el pipeline:
+Utilizamos la **rama** por defecto main a la que añadimos el fichero *.gitlab-ci.yml* con el pipeline:
 
 ```yaml
 .maven_jobs:
   image: maven:3.6.3-jdk-8-openj9
 
 .docker_jobs:
+  image: docker:latest
   before_script:
     - docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY/$CI_PROJECT_PATH
 
@@ -227,6 +220,7 @@ build_image:
 
 deploy:
   stage: deploy
+  image: !reference [.docker_jobs,image]
   before_script:
     - !reference [.docker_jobs,before_script]
     - if [[ $(docker ps --filter "name=springapp" --format '{{.Names}}') == "springapp" ]]; then docker rm -f springapp; fi;
@@ -234,7 +228,6 @@ deploy:
     - docker run --name "springapp" -d -p 8080:8080 $CI_REGISTRY/$CI_PROJECT_PATH:$CI_COMMIT_SHA
   needs:
     - job: build_image
-
 ```
 *(solutions/gitlab-01/.gitlab-ci.yml)*
 
@@ -254,11 +247,53 @@ Y podemos acceder a la aplicación a través de la URL indicada en el enunciado:
 
 ### Ejercicio 2. Crear un usuario nuevo y probar que no puede acceder al proyecto anteriormente creado
 
+Creamos un nuevo usuario y al loguearnos con él no aparece ningún repositorio, simplemente la página de bienvenida donde se le permite crear nuevos proyectos y grupos o explorar los repositorios públicos, que en este caso no hay ninguno.
+
+Desde el usuario donde tenemos el proyecto del ejercicio anterior, añadimos al nuevo usuario como miembro al proyecto desde la sección **Project members** *(Project Information > Members)* del menú del proyecto pulsando el botón **Invite members**, donde especificaremos el usuario y su rol. Para ir comprobando los permisos para cada rol cambiaremos su rol desde este mismo panel.
+
+Tras probar a hacer las acciones propuestas con los distintos roles obtenemos los resultados resumidos en la siguiente tabla:
+
+| Acción            | guest | reporter | developer | maintainer |
+|:------------------|:-----:|:--------:|:---------:|:----------:|
+| Commit            |       |          |           |            |
+| Ejecutar pipeline |       |          |           |            |
+| Push & Pull       |       |          |           |            |
+| Merge request     |       |          |           |            |
+| Administración    |       |          |           |            |
+
 
 
 ### Ejercicio 3. Crear un nuevo repositorio, que contenga una pipeline, que clone otro proyecto, springapp anteriormente creado.
 
+#### Método CI job permissions model
 
+Creamos un repositorio desde otro usuario y definimos un pipeline sencillo que clone el proyecto y liste los ficheros, para lo que utilizamos una imagen de docker con git, por ejemplo **bitnami/git**.
+
+```yaml
+stages:
+  - clone
+
+clone_ci_job:
+  stage: clone
+  image: bitnami/git:latest
+  script:
+    - "git clone http://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.local:8888/developer1/springapp.git"
+    - "ls -R"
+```
+*(solutions/gitlab-03-1/.gitlab-ci.yml)*
+
+Probamos a ejecutar el pipeline en distintos escenarios en función de los permisos del nuevo usuario sobre el proyecto del repositorio que queremos clonar obteniendo los siguientes resultados:
+
+- Si el usuario no es miembro del proyecto a clonar el pipeline falla obteniendo el error `remote: The project you were looking for could not be found or you don't have permission to view it.`
+- Si el usuario es miembro del proyecto a clonar pero su rol es *guest* el pipeline también falla, esta vez con el error `remote: You are not allowed to download code from this project.`
+- Si el usuario es miembro del proyecto con un rol distinto a *guest*, el repositorio se clona correctamente y se listan sus ficheros en el output del pipeline
+
+#### Método deploy keys
+
+```yaml
+
+```
+*(solutions/gitlab-03-2/.gitlab-ci.yml)*
 
 ## Soluciones a ejercicios GitHub Actions
 
