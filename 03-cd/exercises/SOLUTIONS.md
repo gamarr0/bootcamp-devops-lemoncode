@@ -249,19 +249,26 @@ Y podemos acceder a la aplicación a través de la URL indicada en el enunciado:
 
 Creamos un nuevo usuario y al loguearnos con él no aparece ningún repositorio, simplemente la página de bienvenida donde se le permite crear nuevos proyectos y grupos o explorar los repositorios públicos, que en este caso no hay ninguno.
 
-Desde el usuario donde tenemos el proyecto del ejercicio anterior, añadimos al nuevo usuario como miembro al proyecto desde la sección **Project members** *(Project Information > Members)* del menú del proyecto pulsando el botón **Invite members**, donde especificaremos el usuario y su rol. Para ir comprobando los permisos para cada rol cambiaremos su rol desde este mismo panel.
+Desde el usuario donde tenemos el proyecto del ejercicio anterior, añadimos al nuevo usuario como miembro al proyecto desde la sección **Project members** *(Project Information > Members)* del menú del proyecto pulsando el botón **Invite members**, donde especificaremos el usuario y su rol. Para ir comprobando los permisos para cada rol iremos cambiando su rol desde este mismo panel.
 
 Tras probar a hacer las acciones propuestas con los distintos roles obtenemos los resultados resumidos en la siguiente tabla:
 
-| Acción            | guest | reporter | developer | maintainer |
-|:------------------|:-----:|:--------:|:---------:|:----------:|
-| Commit            |       |          |           |            |
-| Ejecutar pipeline |       |          |           |            |
-| Push & Pull       |       |          |           |            |
-| Merge request     |       |          |           |            |
-| Administración    |       |          |           |            |
+| Acción                   | Guest | Reporter | Developer | Maintainer |
+|:-------------------------|:-----:|:--------:|:---------:|:----------:|
+| Commit                   |       |    ~     |     X     |     X      |
+| Pull                     |       |    X     |     X     |     X      |
+| Push                     |       |          |     X     |     X      |
+| Push (protected)         |       |          |           |     X      |
+| Merge request            |       |    X     |     X     |     X      |
+| Run pipeline             |       |          |     X     |     X      |
+| Run pipeline (protected) |       |          |           |     X      |
+| Administration           |       |          |           |     X      |
 
-
+Algunas notas sobre los resultados:
+- La acción *Commit* no se restringe directamente ya que se puede hacer commit en el repositorio de forma local, lo que realmente importa son los permisos que se tengan para hacer *Pull* de los commits existentes o hacer *Push* de nuevos commits.
+- Derivado del punto anterior, para el rol *Reporter* se ha marcado la acción *Commit* con **~** queriendo indicar que puede ver los commits existentes (ya que puede hacer *Pull*) pero no puede añadir nuevos commits (ya que no puede hacer *Push*). Para hacer cambios lo único que puede hacer es crear un fork del repositorio con los cambios que quiere aplicar y crear un merge request que solicite mezclar los cambios de su fork al repositorio principal. Este merge request solo podrá mezclarlo un usuario con permisos sobre la rama destino.
+- Las acciones de *Push* y *Run pipeline* se han separado en dos para diferenciar entre ramas no protegidas (normalmente las que se crean para añadir cambios que sean aplicados a través de merge requests) y protegidas (por defecto *main*).
+- Aunque los permisos indicados sobre las ramas protegidas son los que hay por defecto, para cada rama protegida se puede permitir que los usuarios con rol *Developer* también puedan mezclar merge requests sobre ellas o hacer push directamente. Esto se hace desde la administración del proyecto, en la sección *Settings > Repository > Protected branches*.
 
 ### Ejercicio 3. Crear un nuevo repositorio, que contenga una pipeline, que clone otro proyecto, springapp anteriormente creado.
 
@@ -277,12 +284,12 @@ clone_ci_job:
   stage: clone
   image: bitnami/git:latest
   script:
-    - "git clone http://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.local:8888/developer1/springapp.git"
-    - "ls -R"
+    - git clone http://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.local:8888/developer1/springapp.git
+    - ls -R
 ```
 *(solutions/gitlab-03-1/.gitlab-ci.yml)*
 
-Probamos a ejecutar el pipeline en distintos escenarios en función de los permisos del nuevo usuario sobre el proyecto del repositorio que queremos clonar obteniendo los siguientes resultados:
+Probamos a ejecutar el pipeline en distintos escenarios en función de los permisos del nuevo usuario sobre el proyecto del repositorio que queremos clonar, obteniendo los siguientes resultados:
 
 - Si el usuario no es miembro del proyecto a clonar el pipeline falla obteniendo el error `remote: The project you were looking for could not be found or you don't have permission to view it.`
 - Si el usuario es miembro del proyecto a clonar pero su rol es *guest* el pipeline también falla, esta vez con el error `remote: You are not allowed to download code from this project.`
@@ -290,10 +297,33 @@ Probamos a ejecutar el pipeline en distintos escenarios en función de los permi
 
 #### Método deploy keys
 
-```yaml
+Generamos un par de claves privada/pública y añadimos la clave pública como *Deploy key* en el proyecto *springapp*, que es el que queremos clonar.
 
+Cambiamos al usuario donde tenemos el nuevo proyecto que clonará el anterior y añadimos la clave privada como variable de tipo fichero en la configuración del proyecto (*Settings > CI/CD > Variables*).
+
+El **script** de este pipeline es similar al anterior pero utilizamos SSH en vez de HTTP para clonar el repositorio, sin necesidad de indicar ninguna credencial en el comando, al igual que podríamos utilizar cualquier comando de git directamente. Para ello preparamos el contenedor donde se ejecuta el job realizando varias acciones en el **before_script**:
+- Creamos el directorio **.ssh** para el usuario si no existiese y restringimos sus permisos al propio usuario.
+- Decodificamos con *base64* la clave privada que tenemos en la variable enmascarada, la guardamos en el directorio **.ssh** y le restringimos los permisos al propio usuario, de modo que al estar en este directorio no haga falta añadirla al agente para que ssh la utilice.
+- Añadimos los fingerprints del servidor de git a los hosts conocidos de ssh para que no nos solicite la aprobación al ejecutar comandos ssh y la conexión sea segura (evitando ataques Man in the middle).
+
+```yaml
+stages:
+  - clone
+
+clone_deploy_key:
+  stage: clone
+  image: bitnami/git:latest
+  before_script:
+    - mkdir -p ~/.ssh && chmod 700 ~/.ssh
+    - echo "$EJ3_PRIVATE_KEY" | base64 -d > ~/.ssh/id_ed25519 && chmod 400 ~/.ssh/id_ed25519
+    - ssh-keyscan gitlab.local >> ~/.ssh/known_hosts && chmod 644 ~/.ssh/known_hosts
+  script:
+    - git clone git@gitlab.local:developer1/springapp.git
+    - ls -R
 ```
 *(solutions/gitlab-03-2/.gitlab-ci.yml)*
+
+Con este método el repositorio se clona correctamente independientemente de los permisos que tenga el usuario desde el que se ejecuta el pipeline sobre el proyecto, incluso sin ser miembro del mismo, ya que estamos utilizando la clave privada correspondiente a la pública que se ha añadido como *Deploy key* en el proyecto.
 
 ## Soluciones a ejercicios GitHub Actions
 

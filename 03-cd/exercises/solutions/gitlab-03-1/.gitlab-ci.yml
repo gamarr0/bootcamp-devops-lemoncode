@@ -5,5 +5,5 @@ clone_ci_job:
   stage: clone
   image: bitnami/git:latest
   script:
-    - "git clone http://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.local:8888/developer1/springapp.git"
-    - "ls -R"
+    - git clone http://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.local:8888/developer1/springapp.git
+    - ls -R

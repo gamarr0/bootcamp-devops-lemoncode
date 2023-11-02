@@ -1,0 +1,13 @@
+stages:
+  - clone
+
+clone_deploy_key:
+  stage: clone
+  image: bitnami/git:latest
+  before_script:
+    - mkdir -p ~/.ssh && chmod 700 ~/.ssh
+    - echo "$EJ3_PRIVATE_KEY" | base64 -d > ~/.ssh/id_ed25519 && chmod 400 ~/.ssh/id_ed25519
+    - ssh-keyscan gitlab.local >> ~/.ssh/known_hosts && chmod 644 ~/.ssh/known_hosts
+  script:
+    - git clone git@gitlab.local:developer1/springapp.git
+    - ls -R
