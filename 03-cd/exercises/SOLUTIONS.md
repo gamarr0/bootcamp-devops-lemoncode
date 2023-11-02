@@ -299,7 +299,7 @@ Probamos a ejecutar el pipeline en distintos escenarios en función de los permi
 
 Generamos un par de claves privada/pública y añadimos la clave pública como *Deploy key* en el proyecto *springapp*, que es el que queremos clonar.
 
-Cambiamos al usuario donde tenemos el nuevo proyecto que clonará el anterior y añadimos la clave privada como variable de tipo fichero en la configuración del proyecto (*Settings > CI/CD > Variables*).
+Cambiamos al usuario donde tenemos el nuevo proyecto que clonará el anterior y añadimos la clave privada como variable enmascarada en la configuración del proyecto (*Settings > CI/CD > Variables*), para lo que tendremos que codificarla utilizando *base64* para que no contenga caracteres no permitidos como saltos de línea. Haciéndola enmascarada evitaremos que la clave pueda aparecer en los logs.
 
 El **script** de este pipeline es similar al anterior pero utilizamos SSH en vez de HTTP para clonar el repositorio, sin necesidad de indicar ninguna credencial en el comando, al igual que podríamos utilizar cualquier comando de git directamente. Para ello preparamos el contenedor donde se ejecuta el job realizando varias acciones en el **before_script**:
 - Creamos el directorio **.ssh** para el usuario si no existiese y restringimos sus permisos al propio usuario.
