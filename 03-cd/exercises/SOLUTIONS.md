@@ -15,7 +15,9 @@ docker run -v jenkinsgradle_home:/var/jenkins_home -p 8080:8080 -p 50000:50000 j
 
 Se ha creado un repositorio público de GitHub con el código de la aplicación de ejemplo para descargarlo desde el pipeline: https://github.com/gamarr0/lemoncode-calculator
 
-Creamos un job de tipo Pipeline en el que para el paso de obtener el código de un repositorio remoto utilizamos el step checkout que nos proporciona el plugin de git (que viene incluido en los plugins por defecto) y para los pasos de compilación y tests unitarios ejecutamos los comandos utilizando setps sh:
+Si el pipeline lo guardásemos en el mismo repositorio que la aplicación el primer paso sería automático ya que se haría el checkout del repositorio al obtener el pipeline, pero como una de las stages propuestas en el enunciado de forma explícita es hacer el checkout del código desde un repositorio remoto podemos tenerlo en otro repositorio distinto o declararlo directamente en Jenkins.
+
+Creamos un job de tipo Pipeline en el que para el paso de obtener el código de un repositorio remoto utilizamos el step **checkout** que nos proporciona el plugin de git (que viene incluido en los plugins por defecto) y para los pasos de compilación y tests unitarios ejecutamos los comandos utilizando setps **sh**:
 
 ```groovy
 pipeline {
