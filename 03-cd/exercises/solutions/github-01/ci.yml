@@ -1,0 +1,34 @@
+name: CI
+
+on: pull_request
+
+jobs:
+  build:
+    name: Build app
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: npm
+          cache-dependency-path: hangman-front/package-lock.json
+      - name: build
+        working-directory: ./hangman-front
+        run: |
+          npm ci
+          npm run build
+  unit_tests:
+    name: Unit tests
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - name: test
+        working-directory: ./hangman-front
+        run: |
+          npm ci
+          npm run test

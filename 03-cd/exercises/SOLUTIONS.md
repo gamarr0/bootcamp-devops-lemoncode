@@ -331,12 +331,89 @@ Con este método el repositorio se clona correctamente independientemente de los
 
 ### Ejercicio 1. Crea un workflow CI para el proyecto de frontend
 
+TODO
 
+```yaml
+name: CI
+
+on: pull_request
+
+jobs:
+  build:
+    name: Build app
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: npm
+          cache-dependency-path: hangman-front/package-lock.json
+      - name: build
+        working-directory: ./hangman-front
+        run: |
+          npm ci
+          npm run build
+  unit_tests:
+    name: Unit tests
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - name: test
+        working-directory: ./hangman-front
+        run: |
+          npm ci
+          npm run test
+```
+*(solutions/github-01/ci.yml)*
 
 ### Ejercicio 2. Crea un workflow CD para el proyecto de frontend
 
+TODO
 
+```yaml
+name: CD
+
+on: workflow_dispatch
+
+jobs:
+  deploy:
+    name: Deploy image
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    steps:
+      - uses: actions/checkout@v3
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build image
+        working-directory: ./hangman-front
+        run: |
+          docker build -t ghcr.io/gamarr0/hangman-front:${{ github.sha }} .
+      - name: Push image to registry
+        run: |
+          docker push ghcr.io/gamarr0/hangman-front:${{ github.sha }}
+```
+*(solutions/github-02/cd.yml)*
+
+TODO
+
+![Paquete generado en el repositorio de GitHub](solutions-images/github-02.png)
 
 ### Ejercicio 3. Crea un workflow que ejecute tests e2e
 
+TODO
+
+```yaml
+
+```
+*(solutions/github-03/e2e.yml)*
 
