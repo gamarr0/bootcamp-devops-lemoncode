@@ -371,6 +371,10 @@ jobs:
 ```
 *(solutions/github-01/ci.yml)*
 
+TODO
+
+![Workflow ejecutado en pull request](solutions-images/github-01.png)
+
 ### Ejercicio 2. Crea un workflow CD para el proyecto de frontend
 
 TODO
