@@ -349,7 +349,7 @@ jobs:
           node-version: 16
           cache: npm
           cache-dependency-path: hangman-front/package-lock.json
-      - name: build
+      - name: Build app
         working-directory: ./hangman-front
         run: |
           npm ci
@@ -363,7 +363,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 16
-      - name: test
+      - name: Execute unit tests
         working-directory: ./hangman-front
         run: |
           npm ci
