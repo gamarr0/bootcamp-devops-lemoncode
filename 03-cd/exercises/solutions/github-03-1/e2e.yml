@@ -1,0 +1,25 @@
+name: E2E
+
+on: workflow_dispatch
+
+jobs:
+  e2e:
+    name: E2E tests for hangman app
+    runs-on: ubuntu-latest
+    services:
+      api:
+        image: jaimesalas/hangman-api
+        ports:
+          - 3001:3000
+      front:
+        image: jaimesalas/hangman-front
+        env:
+          API_URL: http://localhost:3001
+        ports:
+          - 8080:8080
+    steps:
+      - uses: actions/checkout@v3
+      - name: Execute tests
+        uses: cypress-io/github-action@v6
+        with:
+          working-directory: hangman-e2e/e2e
