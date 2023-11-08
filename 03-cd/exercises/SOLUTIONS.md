@@ -445,14 +445,13 @@ jobs:
         ports:
           - 8080:8080
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
       - name: Execute tests
         uses: cypress-io/github-action@v6
         with:
           working-directory: hangman-e2e/e2e
 ```
-*(solutions/github-03/e2e.yml)*
+*(solutions/github-03-1/e2e.yml)*
 
 Para desplegar localmente la api y la aplicación front del proyecto utilizamos los **containerized services**, que nos permiten ejecutar contenedores de docker con la imagen y la configuración que se le especifique. 
 
@@ -460,4 +459,46 @@ Usamos la acción *cypress-io/github-action* para ejecutar Cypress, estableciend
 
 Tras ejecutarlo comprobamos que se ejecuta correctamente:
 
-![Alt text](solutions-images/github-03.png)
+![Alt text](solutions-images/github-03-1.png)
+
+Para integrarlo con el ejercicio anterior, una alternativa a ejecutarlo de forma manual sería que se ejecute cuando el workflow CD termine correctamente, de modo que se ejecuten las pruebas sobre la nueva imagen publicada. Para ello se puede usar el evento **workflow_run** y obtener el hash de la imagen publicada usando el contexto **github**. Modificamos el workflow, quedando:
+
+```yaml
+name: E2E
+
+on:
+  workflow_run:
+    workflows: [CD]
+    types:
+      - completed
+
+jobs:
+  e2e:
+    name: E2E tests for hangman app
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    services:
+      api:
+        image: jaimesalas/hangman-api
+        ports:
+          - 3001:3000
+      front:
+        image: ghcr.io/gamarr0/hangman-front:${{ github.sha }}
+        env:
+          API_URL: http://localhost:3001
+        ports:
+          - 8080:8080
+    steps:
+      - uses: actions/checkout@v3
+      - name: Execute tests
+        uses: cypress-io/github-action@v6
+        with:
+          working-directory: hangman-e2e/e2e
+```
+*(solutions/github-03-2/e2e.yml)*
+
+Establecemos un condicional al job usando **if** para que no se ejecute si el workflow para CD no se ha ejecutado correctamente. Como el workflow se ejecuta sobre el mismo commit del repositorio donde se ejecutó el workflow de CD, usando **github.sha** obtenemos el tag de la imagen que se acaba de generar.
+
+Tras ejecutar el workflow de CD de nuevo comprobamos que cuando termina se lanza automáticamente una ejecución del workflow E2E:
+
+![Alt text](solutions-images/github-03-2.png)
