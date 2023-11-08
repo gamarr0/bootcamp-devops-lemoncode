@@ -331,7 +331,9 @@ Con este método el repositorio se clona correctamente independientemente de los
 
 ### Ejercicio 1. Crea un workflow CI para el proyecto de frontend
 
-TODO
+Copiamos en un nuevo repositorio público de GitHub el directorio indicado: https://github.com/gamarr0/lemoncode-hangman
+
+Creamos la jerarquía de carpetas *.github/workflows/* en la raíz del repositorio y añadimos el workflow propuesto:
 
 ```yaml
 name: CI
@@ -371,7 +373,9 @@ jobs:
 ```
 *(solutions/github-01/ci.yml)*
 
-TODO
+Se cachean los paquetes de npm usando la configuración de la acción *actions/setup-node*.
+
+Tras crear una pull request para probar comprobamos que el workflow se ejecuta correctamente:
 
 ![Workflow ejecutado en pull request](solutions-images/github-01.png)
 
@@ -386,7 +390,7 @@ on: workflow_dispatch
 
 jobs:
   deploy:
-    name: Deploy image
+    name: Publish docker image
     runs-on: ubuntu-latest
     permissions:
       packages: write
@@ -408,16 +412,52 @@ jobs:
 ```
 *(solutions/github-02/cd.yml)*
 
-TODO
+Utilizamos la acción *docker/login-action* para hacer login en el container registry de GitHub, configurando las credenciales a partir del contexto **github** (del que obtenermos el nombre de usuario) y de los secretos (de donde obtenemos el token de GitHub correspondiente al la ejecución del workflow actual que se crea por defecto).
+
+Tras ejecutar el workflow de forma manual comprobamos que se ejecuta correctamente y que genera el paquete correspondiente a la imagen generada:
 
 ![Paquete generado en el repositorio de GitHub](solutions-images/github-02.png)
 
 ### Ejercicio 3. Crea un workflow que ejecute tests e2e
 
-TODO
+Añadimos a nuestro repositorio el directorio *hangman-e2e/e2e* que contiene la configuración y los tests de Cypress.
+
+Creamos un nuevo workflow para los tests E2E que en principio se ejecutará de forma manual e independiente de los ejercicios anteriores:
 
 ```yaml
+name: E2E
 
+on: workflow_dispatch
+
+jobs:
+  e2e:
+    name: E2E tests for hangman app
+    runs-on: ubuntu-latest
+    services:
+      api:
+        image: jaimesalas/hangman-api
+        ports:
+          - 3001:3000
+      front:
+        image: jaimesalas/hangman-front
+        env:
+          API_URL: http://localhost:3001
+        ports:
+          - 8080:8080
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Execute tests
+        uses: cypress-io/github-action@v6
+        with:
+          working-directory: hangman-e2e/e2e
 ```
 *(solutions/github-03/e2e.yml)*
 
+Para desplegar localmente la api y la aplicación front del proyecto utilizamos los **containerized services**, que nos permiten ejecutar contenedores de docker con la imagen y la configuración que se le especifique. 
+
+Usamos la acción *cypress-io/github-action* para ejecutar Cypress, estableciendo en las opciones el directorio de trabajo donde tenemos la configuración.
+
+Tras ejecutarlo comprobamos que se ejecuta correctamente:
+
+![Alt text](solutions-images/github-03.png)
