@@ -333,7 +333,7 @@ Con este método el repositorio se clona correctamente independientemente de los
 
 Copiamos en un nuevo repositorio público de GitHub el directorio indicado: https://github.com/gamarr0/lemoncode-hangman
 
-Creamos la jerarquía de carpetas *.github/workflows/* en la raíz del repositorio y añadimos el workflow propuesto:
+Creamos la jerarquía de carpetas *.github/workflows/* en la raíz del repositorio y añadimos el workflow propuesto para CI:
 
 ```yaml
 name: CI
@@ -381,7 +381,7 @@ Tras crear una pull request para probar comprobamos que el workflow se ejecuta c
 
 ### Ejercicio 2. Crea un workflow CD para el proyecto de frontend
 
-TODO
+Añadimos un fichero a *.github/workflows/* con el nuevo workflow para CD:
 
 ```yaml
 name: CD
