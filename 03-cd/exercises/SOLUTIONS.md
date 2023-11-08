@@ -497,7 +497,7 @@ jobs:
 ```
 *(solutions/github-03-2/e2e.yml)*
 
-Establecemos un condicional al job usando **if** para que no se ejecute si el workflow para CD no se ha ejecutado correctamente. Como el workflow se ejecuta sobre el mismo commit del repositorio donde se ejecutó el workflow de CD, usando **github.sha** obtenemos el tag de la imagen que se acaba de generar.
+Establecemos un condicional al job usando **if** y las propiedades del evento **workflow_run** para que no se ejecute si el workflow para CD no se ha ejecutado correctamente. Como el workflow se ejecuta sobre el mismo commit del repositorio donde se ejecutó el workflow de CD, usando **github.sha** obtenemos el tag de la imagen que se acaba de generar.
 
 Tras ejecutar el workflow de CD de nuevo comprobamos que cuando termina se lanza automáticamente una ejecución del workflow E2E:
 
