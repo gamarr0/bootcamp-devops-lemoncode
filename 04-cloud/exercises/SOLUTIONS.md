@@ -49,17 +49,17 @@ managedNodeGroups:
 ```
 *(01-launching-cluster/cluster.yml)*
 
-Aplicamos el fichero usando eksctl (primero con el argumento --dry-run para comprobar que la definición es correcta y queda como queremos):
+Aplicamos el fichero usando **eksctl** (primero con el argumento *--dry-run* para comprobar que la definición es correcta y queda como queremos):
 
 ```bash
 eksctl create cluster -f 01-launching-cluster/cluster.yaml
 ```
 
-Desde la consola de aws podemos ver la definición de todo lo que se está creando para el cluster desde el servicio CloudFormation
+Desde la consola de aws podemos ver la definición de todo lo que se está creando para el cluster desde el servicio *CloudFormation*.
 
 ![Estructura del cluster en CloudFormation](solutions-images/eks-2.png)
 
-Una vez creado el cluster, podemos verlo activo en el servicio EKS de la consola de aws
+Una vez creado el cluster, podemos verlo activo en el servicio *EKS* de la consola de aws.
 
 ![Cluster en servicio EKS de la consola de AWS](solutions-images/eks-3.png)
 
