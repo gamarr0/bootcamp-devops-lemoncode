@@ -2,6 +2,8 @@
 
 *NOTA: los comandos y rutas relativas toman como referencia el directorio actual (04-cloud/exercises)*
 
+Se ha elegido la alternativa de Amazon Web Services (EKS) para realizar este laboratorio.
+
 ## Configurando el entorno
 
 Instalamos aws cli, kubectl y eksctl
