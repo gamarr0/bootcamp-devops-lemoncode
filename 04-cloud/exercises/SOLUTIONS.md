@@ -115,13 +115,15 @@ Aplicamos las definciones de los servicios *apple* y *banana* y del ingress que 
 kubectl apply -f 03-exposing-services/
 ```
 
+Con **kubectl** podemos listar los ingress hasta que se nos asigne una dirección en amazon para el que acabamos de probar:
+
 ![Nginx ingress](solutions-images/eks-8.png)
 
-Con **kubectl** podemos listar los ingress hasta que se nos asigne una dirección en amazon para el que acabamos de probar y así poder probarlo utilizando curl para falsear la cabecera Host con nuestro dominio ficticio.
+Una vez se nos asigna la dirección podemos probarlo utilizando curl para falsear la cabecera Host con nuestro dominio ficticio:
 
 ![Probando nginx ingress](solutions-images/eks-9.png)
 
-Para terminar eliminamos todos los recursos creados eliminando el cluster completo utilizando eksctl.
+Para terminar eliminamos todos los recursos creados eliminando el cluster completo utilizando eksctl:
 
 ```bash
 eksctl delete cluster bootcamp-cluster
