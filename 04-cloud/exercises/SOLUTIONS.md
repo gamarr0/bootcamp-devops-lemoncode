@@ -109,7 +109,11 @@ Instalamos el ingress nginx en nuestro cluster aplicando con kubectl el fichero 
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.2/deploy/static/provider/aws/deploy.yaml
 ```
 
-Aplicamos las definciones de los servicios *apple* y *banana* y del ingress que permitirá acceder a ambos servicios a través de distintas URI.
+Aplicamos las definciones de los servicios *apple* y *banana* y del ingress que permitirá acceder a ambos servicios a través de distintas URI, para lo que podemos aplicar directamente las 3 definciones del directorio *03-exposing-services*:
+
+```bash
+kubectl apply -f 03-exposing-services/
+```
 
 ![Nginx ingress](solutions-images/eks-8.png)
 

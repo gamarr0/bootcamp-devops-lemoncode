@@ -1,8 +1,8 @@
 # Bootcamp Devops Continuo - Módulo 4 - CI/CD
 
-## Soluciones a ejercicios Jenkins
-
 *NOTA: los comandos y rutas relativas toman como referencia el directorio actual (03-cd/exercises)*
+
+## Soluciones a ejercicios Jenkins
 
 ### Ejercicio 1. CI/CD de una Java + Gradle
 
