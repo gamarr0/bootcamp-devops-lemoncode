@@ -6,7 +6,9 @@ Se ha elegido la alternativa de Amazon Web Services (EKS) para realizar este lab
 
 ## Configurando el entorno
 
-Instalamos aws cli, kubectl y eksctl
+Instalamos aws cli, kubectl y eksctl en la máquina desde donde vamos a gestionar nuestro clúster.
+
+Desde la consola de AWS, vamos al servicio IAM y creamos un usuario con los permisos necesarios guardando la Access key y su correspondiente Secret key las cuales necesitaremos para autenticarnos desde AWS Cli.
 
 Configuramos aws con las credenciales del usuario creado usando *aws configure*
 
@@ -14,7 +16,7 @@ Comprobamos la credencial activa en aws con *aws sts get-caller-identity*
 
 ![Comprobación de credencial activa en aws](solutions-images/eks-1.png)
 
-Creamos par de claves privada/pública
+Creamos par de claves privada/pública para interactuar con las máquinas EC2 si fuese necesario.
 ```bash
 aws ec2 create-key-pair --key-name bootcamp_key --output text > bootcamp_key.pem
 chmod 400 bootcamp_key.pem
